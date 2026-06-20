@@ -1,12 +1,13 @@
 package com.typeahead.search.controller;
 
+import com.typeahead.search.config.ConsistentHashRouter;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.typeahead.search.dto.SuggestResponse;
 import com.typeahead.search.repository.QueryRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.redis.core.StringRedisTemplate;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -23,7 +24,7 @@ import java.util.stream.Collectors;
 public class SuggestController {
 
     private final QueryRepository queryRepository;
-    private final StringRedisTemplate redisTemplate;
+    private final ConsistentHashRouter router;
     private final ObjectMapper objectMapper;
 
     @GetMapping("/suggest")
@@ -34,21 +35,22 @@ public class SuggestController {
 
         String normalizedPrefix = prefix.trim().toLowerCase();
         String cacheKey = "suggest:" + normalizedPrefix;
+        ConsistentHashRouter.RedisNode targetNode = router.route(cacheKey);
 
         try {
-            String cachedJson = redisTemplate.opsForValue().get(cacheKey);
+            String cachedJson = targetNode.getTemplate().opsForValue().get(cacheKey);
             if (cachedJson != null) {
-                log.info("CACHE HIT for key: {}", cacheKey);
+                log.info("CACHE HIT on {} for key: {}", targetNode.getName(), cacheKey);
                 List<SuggestResponse> cachedSuggestions = objectMapper.readValue(cachedJson, new TypeReference<List<SuggestResponse>>() {});
                 return ResponseEntity.ok()
                         .header("X-Cache", "HIT")
                         .body(cachedSuggestions);
             }
         } catch (Exception e) {
-            log.error("Redis cache read error for key: {}", cacheKey, e);
+            log.error("Redis cache read error on {} for key: {}", targetNode.getName(), cacheKey, e);
         }
 
-        log.info("CACHE MISS for key: {}", cacheKey);
+        log.info("CACHE MISS on {} for key: {}", targetNode.getName(), cacheKey);
         List<SuggestResponse> suggestions = queryRepository
                 .findTop10ByQueryStartingWithIgnoreCaseOrderByCountDesc(normalizedPrefix)
                 .stream()
@@ -57,9 +59,9 @@ public class SuggestController {
 
         try {
             String jsonToCache = objectMapper.writeValueAsString(suggestions);
-            redisTemplate.opsForValue().set(cacheKey, jsonToCache, Duration.ofSeconds(60));
+            targetNode.getTemplate().opsForValue().set(cacheKey, jsonToCache, Duration.ofSeconds(60));
         } catch (Exception e) {
-            log.error("Redis cache write error for key: {}", cacheKey, e);
+            log.error("Redis cache write error on {} for key: {}", targetNode.getName(), cacheKey, e);
         }
 
         return ResponseEntity.ok()

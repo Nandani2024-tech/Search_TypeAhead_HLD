@@ -1,4 +1,5 @@
 C:\Users\nanda\Desktop\HLD\Implementations\TypeAhead_Assignment\search-typeahead\backend\src\main\java\com\typeahead\search\service\DatasetLoader.java
+C:\Users\nanda\Desktop\HLD\Implementations\TypeAhead_Assignment\search-typeahead\backend\src\main\java\com\typeahead\search\controller\DebugController.java
 C:\Users\nanda\Desktop\HLD\Implementations\TypeAhead_Assignment\search-typeahead\backend\src\main\java\com\typeahead\search\controller\SearchController.java
 C:\Users\nanda\Desktop\HLD\Implementations\TypeAhead_Assignment\search-typeahead\backend\src\main\java\com\typeahead\search\dto\SearchRequest.java
 C:\Users\nanda\Desktop\HLD\Implementations\TypeAhead_Assignment\search-typeahead\backend\src\main\java\com\typeahead\search\SearchApplication.java
@@ -6,3 +7,5 @@ C:\Users\nanda\Desktop\HLD\Implementations\TypeAhead_Assignment\search-typeahead
 C:\Users\nanda\Desktop\HLD\Implementations\TypeAhead_Assignment\search-typeahead\backend\src\main\java\com\typeahead\search\controller\SuggestController.java
 C:\Users\nanda\Desktop\HLD\Implementations\TypeAhead_Assignment\search-typeahead\backend\src\main\java\com\typeahead\search\model\Query.java
 C:\Users\nanda\Desktop\HLD\Implementations\TypeAhead_Assignment\search-typeahead\backend\src\main\java\com\typeahead\search\repository\QueryRepository.java
+C:\Users\nanda\Desktop\HLD\Implementations\TypeAhead_Assignment\search-typeahead\backend\src\main\java\com\typeahead\search\config\ConsistentHashRouter.java
+C:\Users\nanda\Desktop\HLD\Implementations\TypeAhead_Assignment\search-typeahead\backend\src\main\java\com\typeahead\search\config\RedisClusterConfig.java

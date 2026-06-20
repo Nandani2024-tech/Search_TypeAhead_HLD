@@ -15,19 +15,30 @@ services:
     restart: unless-stopped
 
 
-  redis:
+  redis-node-1:
     image: redis:7-alpine
-    container_name: typeahead-redis
+    container_name: typeahead-redis-1
     ports:
       - "6379:6379"
-    volumes:
-      - redis_data:/data
     restart: unless-stopped
 
+  redis-node-2:
+    image: redis:7-alpine
+    container_name: typeahead-redis-2
+    ports:
+      - "6380:6379"
+    restart: unless-stopped
+
+  redis-node-3:
+    image: redis:7-alpine
+    container_name: typeahead-redis-3
+    ports:
+      - "6381:6379"
+    restart: unless-stopped
 
 volumes:
   postgres_data:
-  redis_data:
+
 
 
 
