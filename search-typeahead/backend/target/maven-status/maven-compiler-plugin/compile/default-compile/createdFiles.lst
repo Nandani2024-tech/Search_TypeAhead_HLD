@@ -1,5 +1,7 @@
 com\typeahead\search\repository\QueryRepository.class
+com\typeahead\search\dto\SuggestResponse.class
 com\typeahead\search\SearchApplication.class
 com\typeahead\search\model\Query$QueryBuilder.class
 com\typeahead\search\model\Query.class
 com\typeahead\search\service\DatasetLoader.class
+com\typeahead\search\controller\SuggestController.class
