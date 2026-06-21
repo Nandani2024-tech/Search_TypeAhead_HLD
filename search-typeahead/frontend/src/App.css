@@ -39,13 +39,32 @@ body {
   padding-top: 15vh;
 }
 
-/* Logo */
-.logo {
-  font-size: 92px;
-  font-weight: 500;
+/* Mode Toggle */
+.mode-toggle {
+  display: flex;
   margin-bottom: 25px;
-  user-select: none;
-  font-family: 'Product Sans', sans-serif; /* fallback to Arial */
+  gap: 10px;
+}
+
+.mode-btn {
+  background: none;
+  border: none;
+  padding: 8px 16px;
+  font-size: 14px;
+  color: #70757a;
+  cursor: pointer;
+  border-bottom: 3px solid transparent;
+  transition: all 0.2s;
+}
+
+.mode-btn:hover {
+  color: var(--text-color);
+}
+
+.mode-btn.active {
+  color: var(--google-blue);
+  border-bottom: 3px solid var(--google-blue);
+  font-weight: bold;
 }
 
 .logo span { display: inline-block; }

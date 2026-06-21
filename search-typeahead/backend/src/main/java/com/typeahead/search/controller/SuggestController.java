@@ -28,13 +28,17 @@ public class SuggestController {
     private final ObjectMapper objectMapper;
 
     @GetMapping("/suggest")
-    public ResponseEntity<List<SuggestResponse>> suggest(@RequestParam(name = "q", required = false) String prefix) {
+    public ResponseEntity<List<SuggestResponse>> suggest(
+            @RequestParam(name = "q", required = false) String prefix,
+            @RequestParam(name = "mode", defaultValue = "trending") String mode) {
+        
         if (prefix == null || prefix.trim().isEmpty()) {
             return ResponseEntity.ok(Collections.emptyList());
         }
 
         String normalizedPrefix = prefix.trim().toLowerCase();
-        String cacheKey = "suggest:" + normalizedPrefix;
+        String effectiveMode = mode.equalsIgnoreCase("basic") ? "basic" : "trending";
+        String cacheKey = "suggest:" + effectiveMode + ":" + normalizedPrefix;
         ConsistentHashRouter.RedisNode targetNode = router.route(cacheKey);
 
         try {
@@ -51,11 +55,33 @@ public class SuggestController {
         }
 
         log.info("CACHE MISS on {} for key: {}", targetNode.getName(), cacheKey);
-        List<SuggestResponse> suggestions = queryRepository
-                .findTop10ByQueryStartingWithIgnoreCaseOrderByCountDesc(normalizedPrefix)
-                .stream()
-                .map(query -> new SuggestResponse(query.getQuery(), query.getCount()))
-                .collect(Collectors.toList());
+        
+        List<SuggestResponse> suggestions;
+        if (effectiveMode.equals("basic")) {
+            suggestions = queryRepository
+                    .findTop10ByQueryStartingWithIgnoreCaseOrderByCountDesc(normalizedPrefix)
+                    .stream()
+                    .map(query -> new SuggestResponse(query.getQuery(), query.getCount()))
+                    .collect(Collectors.toList());
+        } else {
+            // Trending Mode: Fetch Top 50 candidates and re-rank in memory
+            long now = System.currentTimeMillis();
+            double halfLifeMillis = 12.0 * 60 * 60 * 1000; // 12 hours
+
+            suggestions = queryRepository
+                    .findTop50ByQueryStartingWithIgnoreCaseOrderByCountDesc(normalizedPrefix)
+                    .stream()
+                    .map(q -> {
+                        long lastTime = (q.getLastSearchedAt() != null) ? q.getLastSearchedAt().getTime() : 0L;
+                        double timeDelta = (double) (now - lastTime);
+                        double score = q.getCount() * Math.pow(2.0, -(timeDelta / halfLifeMillis));
+                        return new RankedSuggestion(q.getQuery(), q.getCount(), score);
+                    })
+                    .sorted((a, b) -> Double.compare(b.score, a.score))
+                    .limit(10)
+                    .map(rs -> new SuggestResponse(rs.query, rs.count))
+                    .collect(Collectors.toList());
+        }
 
         try {
             String jsonToCache = objectMapper.writeValueAsString(suggestions);
@@ -67,6 +93,18 @@ public class SuggestController {
         return ResponseEntity.ok()
                 .header("X-Cache", "MISS")
                 .body(suggestions);
+    }
+
+    private static class RankedSuggestion {
+        String query;
+        long count;
+        double score;
+
+        RankedSuggestion(String query, long count, double score) {
+            this.query = query;
+            this.count = count;
+            this.score = score;
+        }
     }
 }
 

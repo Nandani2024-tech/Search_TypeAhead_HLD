@@ -1,7 +1,9 @@
 com\typeahead\search\dto\SearchRequest.class
+com\typeahead\search\controller\SuggestController$RankedSuggestion.class
 com\typeahead\search\repository\QueryRepository.class
 com\typeahead\search\dto\SuggestResponse.class
 com\typeahead\search\config\RedisClusterConfig.class
+com\typeahead\search\config\WebMvcConfig.class
 com\typeahead\search\SearchApplication.class
 com\typeahead\search\model\Query$QueryBuilder.class
 com\typeahead\search\controller\SuggestController.class

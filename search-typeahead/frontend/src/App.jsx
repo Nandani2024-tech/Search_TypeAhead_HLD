@@ -8,6 +8,7 @@ function App() {
   const [error, setError] = useState(null);
   const [selectedIndex, setSelectedIndex] = useState(-1);
   const [showDropdown, setShowDropdown] = useState(false);
+  const [mode, setMode] = useState('trending');
   const [message, setMessage] = useState(null);
   
   const dropdownRef = useRef(null);
@@ -25,17 +26,17 @@ function App() {
     }
 
     debounceTimer.current = setTimeout(() => {
-      fetchSuggestions(query);
+      fetchSuggestions(query, mode);
     }, 300);
 
     return () => clearTimeout(debounceTimer.current);
-  }, [query]);
+  }, [query, mode]);
 
-  const fetchSuggestions = async (prefix) => {
+  const fetchSuggestions = async (prefix, currentMode) => {
     setIsLoading(true);
     setError(null);
     try {
-      const response = await fetch(`http://localhost:8080/suggest?q=${encodeURIComponent(prefix)}`);
+      const response = await fetch(`http://localhost:8080/suggest?q=${encodeURIComponent(prefix)}&mode=${currentMode}`);
       if (!response.ok) throw new Error('Failed to fetch suggestions');
       const data = await response.json();
       setSuggestions(data);
@@ -105,6 +106,21 @@ function App() {
           <span className="blue">g</span>
           <span className="green">l</span>
           <span className="red">e</span>
+        </div>
+
+        <div className="mode-toggle">
+          <button 
+            className={`mode-btn ${mode === 'trending' ? 'active' : ''}`} 
+            onClick={() => setMode('trending')}
+          >
+            Trending
+          </button>
+          <button 
+            className={`mode-btn ${mode === 'basic' ? 'active' : ''}`} 
+            onClick={() => setMode('basic')}
+          >
+            Basic (All-time)
+          </button>
         </div>
 
         <div className="search-box-wrapper">

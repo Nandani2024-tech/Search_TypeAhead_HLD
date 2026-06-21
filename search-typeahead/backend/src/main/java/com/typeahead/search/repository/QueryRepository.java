@@ -13,6 +13,8 @@ public interface QueryRepository extends JpaRepository<com.typeahead.search.mode
 
     List<com.typeahead.search.model.Query> findTop10ByQueryStartingWithIgnoreCaseOrderByCountDesc(String prefix);
 
+    List<com.typeahead.search.model.Query> findTop50ByQueryStartingWithIgnoreCaseOrderByCountDesc(String prefix);
+
     @Modifying
     @Transactional
     @org.springframework.data.jpa.repository.Query(value = "INSERT INTO queries (query, count, last_searched_at) VALUES (:queryText, 1, CURRENT_TIMESTAMP) " +

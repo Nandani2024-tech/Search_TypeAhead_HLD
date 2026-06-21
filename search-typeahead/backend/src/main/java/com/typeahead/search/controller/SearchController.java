@@ -40,15 +40,20 @@ public class SearchController {
     private void invalidatePrefixes(String query) {
         int maxLength = Math.min(query.length(), 100); 
         for (int i = 1; i <= maxLength; i++) {
-            String cacheKey = "suggest:" + query.substring(0, i);
-            ConsistentHashRouter.RedisNode targetNode = router.route(cacheKey);
-            try {
-                targetNode.getTemplate().delete(cacheKey);
-            } catch (Exception e) {
-                log.error("Failed to invalidate cache key {} on node {}", cacheKey, targetNode.getName(), e);
+            String prefix = query.substring(0, i);
+            String[] modes = {"basic", "trending"};
+            
+            for (String mode : modes) {
+                String cacheKey = "suggest:" + mode + ":" + prefix;
+                ConsistentHashRouter.RedisNode targetNode = router.route(cacheKey);
+                try {
+                    targetNode.getTemplate().delete(cacheKey);
+                } catch (Exception e) {
+                    log.error("Failed to invalidate cache key {} on node {}", cacheKey, targetNode.getName(), e);
+                }
             }
         }
-        log.info("Invalidated {} cache keys across cluster for search term: {}", maxLength, query);
+        log.info("Invalidated {} prefix levels for BOTH basic/trending modes for search: {}", maxLength, query);
     }
 }
 
