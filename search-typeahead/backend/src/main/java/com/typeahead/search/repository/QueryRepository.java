@@ -17,6 +17,13 @@ public interface QueryRepository extends JpaRepository<com.typeahead.search.mode
 
     @Modifying
     @Transactional
+    @org.springframework.data.jpa.repository.Query(value = "INSERT INTO queries (query, count, last_searched_at) VALUES (:queryText, :delta, CURRENT_TIMESTAMP) " +
+                   "ON CONFLICT (query) DO UPDATE SET count = queries.count + :delta, last_searched_at = CURRENT_TIMESTAMP", 
+           nativeQuery = true)
+    void upsertBatchQuery(@Param("queryText") String queryText, @Param("delta") Long delta);
+
+    @Modifying
+    @Transactional
     @org.springframework.data.jpa.repository.Query(value = "INSERT INTO queries (query, count, last_searched_at) VALUES (:queryText, 1, CURRENT_TIMESTAMP) " +
                    "ON CONFLICT (query) DO UPDATE SET count = queries.count + 1, last_searched_at = CURRENT_TIMESTAMP", 
            nativeQuery = true)
